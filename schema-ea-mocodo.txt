@@ -1,0 +1,14 @@
+CONTIENT, 0N Rank, 11 User
+User: id, username, email, rank_id, is_superuser, balance, is_deleted
+GERE, 0N User, 1N Server
+Server: id, owner, game, configuration, max_ram, storage_amount, start_command, stop_command
+HEBERGE, ON Server, 0N Game
+Game: id, name
+
+Rank: id, name
+EXECUTE, 11 Transation, 0N User
+Transation: id, amount, date, payment_type, user
+POSSEDE, 11 Command, 0N Server
+Command: id, position, command_line
+Configuration: name, commands
+:
