@@ -4,8 +4,11 @@ from accounts.forms import RegisterPanelUserForm
 from accounts.forms import LoginPanelUserForm
 from accounts.models import PanelUser
 from serverpanel.models import Rank
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth import logout
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 # Create your views here.
 def panel_user_list(request):
@@ -19,7 +22,16 @@ def panel_user_login(request):
             password = form.cleaned_data['password']
             user = PanelUser.objects.get(username=username)
             if check_password(password, user.password):
-                return redirect('index')
+                refresh = RefreshToken.for_user(user)
+                # refresh['custom_data'] = {
+                #     'user_id': user.id,
+                #     'username': user.username,
+                #     'rank': user.rank.first().name,
+                # }
+                
+                response = HttpResponseRedirect(reverse('index'))
+                response.set_cookie('jwt', str(refresh.access_token), httponly=True)
+                return response
             else:
                 return render(request, 'user-login.html', {'form': form})
     else:

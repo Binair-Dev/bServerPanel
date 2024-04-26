@@ -14,8 +14,7 @@ class PanelUser(models.Model):
 
     def save(self, *args, **kwargs):
         if self.password:
-            if not self.pk or self._password != self.password:
-                self.password = make_password(self.password)
+            self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
     def __str__(self):
