@@ -1,4 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h1>Bienvenue sur la page d'accueil!</h1>
+  <div class="container">
+    <h1>Gestion de serveur de jeux</h1>
+    <p>Bienvenue sur la gestion de votre serveur de jeux. Vous pouvez gérer vos serveurs ici.</p>
+    <hr>
+    <div class="row">
+      <div class="col-md-6">
+        <img src="https://placehold.co/600x400/EEE/31343C" alt="Image 1" class="img-fluid">
+        <p>Texte à droite pour l'image 1</p>
+      </div>
+      <div class="col-md-6">
+        <img src="https://placehold.co/600x400/EEE/31343C" alt="Image 2" class="img-fluid">
+        <p>Texte à gauche pour l'image 2</p>
+      </div>
+    </div>
+    <hr>
+    <div class="row" style="margin-bottom: 50px">
+      <div class="col-md-6">
+        <h2>Serveurs en ligne</h2>
+        <ul>
+          <p>
+            <li><a href="#" class="btn btn-primary">Serveur 1</a></li>
+          </p>
+          <p>
+            <li><a href="#" class="btn btn-secondary">Serveur 1</a></li>
+          </p>
+          <p>
+            <li><a href="#" class="btn btn-success">Serveur 1</a></li>
+          </p>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <h2>Nouveaux serveurs</h2>
+        <p>Créer un nouveau serveur en cliquant sur le bouton ci-dessous.</p>
+        <a href="#" class="btn btn-primary">Nouveau serveur</a>
+      </div>
+    </div>
+  </div>
 {% endblock %}
