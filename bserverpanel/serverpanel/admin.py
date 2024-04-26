@@ -1,6 +1,7 @@
 from re import A
 from django.contrib import admin
-from serverpanel.models import PanelUser, Server, Game, Rank, Transaction, Command, Configuration
+from serverpanel.models import Server, Game, Rank, Transaction, Command, Configuration
+from accounts.models import PanelUser
 # Register your models here.
 
 admin.site.register(PanelUser)
