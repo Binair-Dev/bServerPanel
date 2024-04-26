@@ -64,5 +64,6 @@ def panel_user_register(request):
         return render(request, 'user-register.html', {'form': form})
     
 def panel_user_logout(request):
-    logout(request)
-    return redirect('index')
+    response = redirect('index')
+    response.delete_cookie('jwt')
+    return response
