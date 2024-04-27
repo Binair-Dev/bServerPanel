@@ -1,18 +1,21 @@
-from django.shortcuts import render
 from django.shortcuts import render, redirect
 from accounts.forms import RegisterPanelUserForm
 from accounts.forms import LoginPanelUserForm
 from accounts.models import PanelUser
+from utils.decoder import isAuthenticated
 from serverpanel.models import Rank
-from django.contrib.auth.hashers import check_password, make_password
-from django.contrib.auth import logout
+from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 # Create your views here.
 def panel_user_list(request):
-    return render(request, 'user-list.html', {'users': PanelUser.objects.all()})
+    is_authenticated = isAuthenticated(request)
+    if is_authenticated:
+        return render(request, 'user-list.html', {'users': PanelUser.objects.all()})
+    else:
+        return redirect('/users/login')
 
 def panel_user_login(request):
     if request.method == 'POST':
@@ -73,4 +76,5 @@ def panel_user_register(request):
 def panel_user_logout(request):
     response = redirect('index')
     response.delete_cookie('jwt')
+    response.delete_cookie('sessionid')
     return response
