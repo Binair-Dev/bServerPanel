@@ -3,11 +3,10 @@ from accounts.forms import RegisterPanelUserForm
 from accounts.forms import LoginPanelUserForm
 from accounts.models import PanelUser
 from utils.decoder import isAuthenticated
-from serverpanel.models import Rank
-from django.contrib.auth.hashers import check_password
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from rest_framework.authtoken.models import Token
+from accounts.models import Rank
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.hashers import make_password
 
 # Create your views here.
 def panel_user_list(request):
@@ -23,24 +22,14 @@ def panel_user_login(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            try:
-                user = PanelUser.objects.get(username=username)
-            except PanelUser.DoesNotExist:
-                return render(request, 'user-login.html', {'form': form, 'message': "Ce nom d'utilisateur n'existe pas"})
-            user = PanelUser.objects.get(username=username)
-            if check_password(password, user.password):
-                token = Token.objects.create(user=user)
-                print(token)
-                
-                response = HttpResponseRedirect(reverse('index'))
-                response.set_cookie('jwt', token, httponly=True)
-                return response
+            user = authenticate(request, username=username, password=password)
+            if user:
+                login(request, user)
+                return redirect('index')
             else:
-                return render(request, 'user-login.html', {'form': form})
-    else:
-        form = LoginPanelUserForm()
-        return render(request, 'user-login.html', {'form': form})
-    
+                return redirect('user-login')
+    return render(request, 'user-login.html', {'form': LoginPanelUserForm})
+
 def panel_user_register(request):
     if request.method == 'POST':
         form = RegisterPanelUserForm(request.POST)
@@ -51,26 +40,22 @@ def panel_user_register(request):
             password_confirm = form.cleaned_data['password_confirm']
 
             if password == password_confirm:
-                try:
-                    rank = Rank.objects.get(name='Membre')
-                except Rank.DoesNotExist:
-                    rank = Rank.objects.create(name='Membre')
-
-                rank = Rank.objects.get(name='Membre')
-                try:
-                    panelUser = PanelUser.objects.create(username=username, email=email, password=password, is_superuser=False, balance=0, is_deleted=False, server_count=0)
-                    panelUser.rank.add(rank)
+                user, created = User.objects.get_or_create(username=username, email=email, defaults={'password': make_password(password), 'is_superuser': False})
+                
+                if created:
+                    rank, _ = Rank.objects.get_or_create(name='Membre')
+                    panel_user = PanelUser.objects.create(balance=0, server_count=0, user=user)
+                    panel_user.rank.add(rank)
                     return redirect('index')
-                except:
-                    return render(request, 'user-register.html', {'form': form, 'message': 'Un utilisateur de ce nom existe de déjà'})
+                else:
+                    return render(request, 'user-register.html', {'form': form, 'message': 'Un utilisateur de ce nom existe déjà'})
             else:
                 return render(request, 'user-register.html', {'form': form})
     else:
         form = RegisterPanelUserForm()
         return render(request, 'user-register.html', {'form': form})
+
     
 def panel_user_logout(request):
-    response = redirect('index')
-    response.delete_cookie('jwt')
-    response.delete_cookie('sessionid')
-    return response
+    logout(request)
+    return redirect('index')

@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import Permission
 
 class Server(models.Model):
     owner = models.ManyToManyField('accounts.PanelUser')
@@ -15,13 +14,6 @@ class Server(models.Model):
 
 class Game(models.Model):
     name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return f"{self.name}"
-        
-class Rank(models.Model):
-    name = models.CharField(max_length=255)
-    permission = models.ManyToManyField(Permission)
 
     def __str__(self):
         return f"{self.name}"
