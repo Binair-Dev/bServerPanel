@@ -2,19 +2,15 @@ from django.shortcuts import render, redirect
 from accounts.forms import RegisterPanelUserForm
 from accounts.forms import LoginPanelUserForm
 from accounts.models import PanelUser
-from utils.decoder import isAuthenticated
 from accounts.models import Rank
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def panel_user_list(request):
-    is_authenticated = isAuthenticated(request)
-    if is_authenticated:
-        return render(request, 'user-list.html', {'users': PanelUser.objects.all()})
-    else:
-        return redirect('/users/login')
+    return render(request, 'user-list.html', {'users': PanelUser.objects.all()})
 
 def panel_user_login(request):
     if request.method == 'POST':
@@ -39,13 +35,18 @@ def panel_user_register(request):
             password = form.cleaned_data['password']
             password_confirm = form.cleaned_data['password_confirm']
 
+            try:
+                if User.objects.get(username=username) is not None:
+                    return render(request, 'user-register.html', {'form': form, 'message': 'Un utilisateur de ce nom existe déjà'})
+            except User.DoesNotExist:
+                pass
+
             if password == password_confirm:
                 user, created = User.objects.get_or_create(username=username, email=email, defaults={'password': make_password(password), 'is_superuser': False})
                 
                 if created:
                     rank, _ = Rank.objects.get_or_create(name='Membre')
-                    panel_user = PanelUser.objects.create(balance=0, server_count=0, user=user)
-                    panel_user.rank.add(rank)
+                    PanelUser.objects.create(balance=0, server_count=0, user=user, rank=rank)
                     return redirect('index')
                 else:
                     return render(request, 'user-register.html', {'form': form, 'message': 'Un utilisateur de ce nom existe déjà'})
@@ -59,3 +60,11 @@ def panel_user_register(request):
 def panel_user_logout(request):
     logout(request)
     return redirect('index')
+
+@login_required(login_url='/users/login')
+def panel_user_profile(request):
+    try:
+        panelUser = PanelUser.objects.get(user=request.user)
+        return render(request, 'user-profile.html', {'panel_user': panelUser})
+    except PanelUser.DoesNotExist:
+        redirect('user-logout')

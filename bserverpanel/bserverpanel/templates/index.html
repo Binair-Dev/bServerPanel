@@ -2,7 +2,12 @@
 {% block content %}
   <div class="container">
     <h1>Gestion de serveur de jeux</h1>
-    <p>Bienvenue sur la gestion de votre serveur de jeux. Vous pouvez gérer vos serveurs ici.</p>
+    {% if user.is_authenticated %}
+    <p>Bienvenue <strong>{{ user.username }}</strong> sur la gestion de votre serveur de jeux. Vous pouvez gérer vos serveurs ici.</p>
+    {% endif %}
+    {% if not user.is_authenticated %}
+    <p>Bienvenue <strong>Invité</strong> sur la gestion de votre serveur de jeux. Vous pouvez gérer vos serveurs ici.</p>
+    {% endif %}
     <hr>
     <div class="row">
       <div class="col-md-6">

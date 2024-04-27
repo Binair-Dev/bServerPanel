@@ -10,7 +10,7 @@ class Rank(models.Model):
         return f"{self.name}"
     
 class PanelUser(models.Model):
-    rank = models.ManyToManyField(Rank)
+    rank = models.ForeignKey(Rank, on_delete=models.SET_NULL, null=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     server_count = models.IntegerField(default=0)
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE, null=True)

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Profil utilisateur{% endblock %}
+{% block content %}
+  <h1>Votre profil</h1>
+  <ul>
+    <li>
+        <strong>Nom d'utilisateur:</strong> {{ user.username }}
+    </li>
+    <li>
+        <strong>Email:</strong> {{ user.email }}
+    </li>
+    <li>
+        <strong>Nombre de serveur disponible:</strong> {{ panel_user.server_count }}
+    </li>
+    <li>
+        <strong>Balance:</strong> {{ panel_user.balance }}€
+    </li>
+    <li>
+        <strong>Votre grade:</strong> {{ panel_user.rank.name }}
+    </li>
+    <li>
+        <strong>Dernière connexion:</strong> {{ user.last_login | date:"j/m/Y à H:i" }}
+    </li>
+    <li>
+        <strong>Première connexion:</strong> {{ user.date_joined | date:"j/m/Y à H:i" }}
+    </li>
+  </ul>
+{% endblock %}
