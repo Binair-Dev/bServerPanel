@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
   <form method="post">
+    {{ message }}
     {% csrf_token %}
     {{ form }}
     <button type="submit">Login</button>

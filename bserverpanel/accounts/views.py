@@ -20,6 +20,10 @@ def panel_user_login(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            try:
+                user = PanelUser.objects.get(username=username)
+            except PanelUser.DoesNotExist:
+                return render(request, 'user-login.html', {'form': form, 'message': "Ce nom d'utilisateur n'existe pas"})
             user = PanelUser.objects.get(username=username)
             if check_password(password, user.password):
                 refresh = RefreshToken.for_user(user)
@@ -54,9 +58,12 @@ def panel_user_register(request):
                     rank = Rank.objects.create(name='Membre')
 
                 rank = Rank.objects.get(name='Membre')
-                panelUser = PanelUser.objects.create(username=username, email=email, password=password, is_superuser=False, balance=0, is_deleted=False, server_count=0)
-                panelUser.rank.add(rank)
-                return redirect('index')
+                try:
+                    panelUser = PanelUser.objects.create(username=username, email=email, password=password, is_superuser=False, balance=0, is_deleted=False, server_count=0)
+                    panelUser.rank.add(rank)
+                    return redirect('index')
+                except:
+                    return render(request, 'user-register.html', {'form': form, 'message': 'Un utilisateur de ce nom existe de déjà'})
             else:
                 return render(request, 'user-register.html', {'form': form})
     else:
