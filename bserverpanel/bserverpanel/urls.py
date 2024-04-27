@@ -9,5 +9,5 @@ urlpatterns = [
     path('', views.index, name='index'),
 
     path('users/', include('accounts.urls')),
-    path('bserver/', include('serverpanel.urls')),
+    path('panel/', include('serverpanel.urls')),
 ]

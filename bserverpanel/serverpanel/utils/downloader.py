@@ -1,13 +1,15 @@
+from django.conf import settings
 import requests
 import os
+import threading
 
-def downloadFile(url, nom_fichier, dossier_destination):
-    if not os.path.exists(dossier_destination):
-        os.makedirs(dossier_destination)
+def downloadFile(url, file_name, destination_folder):
+    if not os.path.exists(destination_folder):
+        os.makedirs(destination_folder)
 
     response = requests.get(url)
     if response.status_code == 200:
-        chemin_fichier = os.path.join(dossier_destination, nom_fichier)
+        chemin_fichier = os.path.join(destination_folder, file_name)
         
         with open(chemin_fichier, 'wb') as f:
             f.write(response.content)
@@ -16,7 +18,7 @@ def downloadFile(url, nom_fichier, dossier_destination):
     else:
         print("Échec du téléchargement.")
 
-url_fichier = "https://api.papermc.io/v2/projects/paper/versions/1.20.4/builds/496/downloads/paper-1.20.4-496.jar"
-nom_fichier_telecharge = "paper-1.20.4-496.jar"
-dossier_destination = "test-folder/paper"
-downloadFile(url_fichier, nom_fichier_telecharge, dossier_destination)
+
+def runDownload(url, file_name, destination_folder):
+    destination_folder = os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, destination_folder)
+    downloadFile(url, file_name, destination_folder)

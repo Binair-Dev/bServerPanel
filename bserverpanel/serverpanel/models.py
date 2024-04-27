@@ -1,6 +1,8 @@
 from django.db import models
 
 class Server(models.Model):
+    name = models.CharField(max_length=255, default="server")
+    directory = models.CharField(max_length=255, default=None, null=True)
     owner = models.ManyToManyField('accounts.PanelUser')
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
     configuration = models.ManyToManyField('Configuration')
