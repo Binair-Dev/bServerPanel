@@ -1,5 +1,7 @@
 from django.conf import settings
 from accounts.models import PanelUser
+from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 import jwt
 
 #Added custom decoder for authentication

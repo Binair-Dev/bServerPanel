@@ -5,9 +5,9 @@ from accounts.models import PanelUser
 from utils.decoder import isAuthenticated
 from serverpanel.models import Rank
 from django.contrib.auth.hashers import check_password
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from rest_framework.authtoken.models import Token
 
 # Create your views here.
 def panel_user_list(request):
@@ -29,15 +29,11 @@ def panel_user_login(request):
                 return render(request, 'user-login.html', {'form': form, 'message': "Ce nom d'utilisateur n'existe pas"})
             user = PanelUser.objects.get(username=username)
             if check_password(password, user.password):
-                refresh = RefreshToken.for_user(user)
-                # refresh['custom_data'] = {
-                #     'user_id': user.id,
-                #     'username': user.username,
-                #     'rank': user.rank.first().name,
-                # }
+                token = Token.objects.create(user=user)
+                print(token)
                 
                 response = HttpResponseRedirect(reverse('index'))
-                response.set_cookie('jwt', str(refresh.access_token), httponly=True)
+                response.set_cookie('jwt', token, httponly=True)
                 return response
             else:
                 return render(request, 'user-login.html', {'form': form})
