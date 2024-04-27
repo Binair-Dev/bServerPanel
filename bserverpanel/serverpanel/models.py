@@ -28,16 +28,16 @@ class Transaction(models.Model):
         return f"{self.id}"
     
 class Command(models.Model):
+    name = models.CharField(max_length=255, default="")
     position = models.IntegerField()
     command_line = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"{self.command_line}"
+        return f"{self.name}"
     
 class Configuration(models.Model):
     name = models.CharField(max_length=255)
-    value = models.CharField(max_length=255)
     commands = models.ManyToManyField(Command)
 
     def __str__(self):
-        return f"{self.name}: {self.value}"
+        return f"{self.name}"
