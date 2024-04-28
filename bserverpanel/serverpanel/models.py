@@ -5,9 +5,8 @@ class Server(models.Model):
     directory = models.CharField(max_length=255, default=None, null=True)
     owner = models.ManyToManyField('accounts.PanelUser')
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
-    configuration = models.ManyToManyField('Configuration')
-    max_ram = models.IntegerField()
-    storage_amount = models.IntegerField()
+    configuration = models.ForeignKey('Configuration', on_delete=models.CASCADE, default=None, null=True)
+    max_ram = models.IntegerField(default=2)
     start_command = models.CharField(max_length=255)
     stop_command = models.CharField(max_length=255)
 
@@ -31,8 +30,11 @@ class Transaction(models.Model):
     
 class Command(models.Model):
     name = models.CharField(max_length=255, default="")
+    command_type = models.CharField(max_length=255, default="")
     position = models.IntegerField()
-    command_line = models.CharField(max_length=255)
+    link = models.CharField(max_length=255, default="")
+    file_name = models.CharField(max_length=255, default="server.jar")
+    command_line = models.CharField(max_length=255, default="")
 
     def __str__(self):
         return f"{self.name}"

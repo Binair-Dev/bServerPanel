@@ -1,8 +1,15 @@
-import threading
-from django.shortcuts import redirect, render
+import os
+from django.conf import settings
+from django.http import HttpResponse
+from django.shortcuts import render
 from accounts.models import PanelUser
+from serverpanel.utils.command_type import CommandType
 from serverpanel.models import Server
 from .utils import downloader
+from .utils import files
+from .utils.SubServer import SubServer
+
+running_servers = {}
 
 def panel_server_list(request):
     try:
@@ -20,13 +27,48 @@ def panel_server_one(request, id):
         return render(request, 'server-one.html', {})
     
 def panel_server_start(request, id):
-    return redirect('server-one', id)
+    if f"{id}" in running_servers:
+        response = HttpResponse(f'<script>alert("Le serveur est déjà démarré."); window.location.href="/panel/server/{id}";</script>')
+        return response
+    else:
+        server = Server.objects.get(id=id)
+        sub_server = SubServer(os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory), server.max_ram, server.start_command, server.stop_command)
+        done = sub_server.start_server()
+        running_servers[f"{id}"] = sub_server
+        if done:
+            response = HttpResponse(f'<script>alert("Le serveur a bien été démarré."); window.location.href="/panel/server/{id}";</script>')
+        else:
+            response = HttpResponse(f'<script>alert("Le serveur n\'a pas pu être demarré."); window.location.href="/panel/server/{id}";</script>')
+        return response
 
 def panel_server_stop(request, id):
-    return redirect('server-one', id)
+    db_server = server = Server.objects.get(id=id)
+    if f"{id}" in running_servers:
+        server = running_servers[f"{id}"]
+        done = server.send_command(db_server.stop_command)
+        if done:
+            del running_servers[f"{id}"]
+            response = HttpResponse(f'<script>alert("Le serveur a bien été arrêté."); window.location.href="/panel/server/{id}";</script>')
+        else:
+            response = HttpResponse(f'<script>alert("Le serveur n\'a pas pu être arrêté."); window.location.href="/panel/server/{id}";</script>')
+        return response
+    response = HttpResponse(f'<script>alert("Le serveur n\'est pas demarré."); window.location.href="/panel/server/{id}";</script>')
+    return response
 
 def panel_server_restart(request, id):
-    return redirect('server-one', id)
+    if f"{id}" in running_servers:
+        server = running_servers[f"{id}"]
+        done = server.restart_server()
+        if done:
+            response = HttpResponse(f'<script>alert("Le serveur a bien été redémarré."); window.location.href="/panel/server/{id}";</script>')
+        else:
+            response = HttpResponse(f'<script>alert("Le serveur n\'a pas pu être redémarré."); window.location.href="/panel/server/{id}";</script>')
+        return response
+    response = HttpResponse(f'<script>alert("Le serveur n\'est pas demarré."); window.location.href="/panel/server/{id}";</script>')
+    return response
+
+def panel_server_cmd(request, id):
+    pass
 
 def panel_server_install(request, id):
     # Pour lancer le téléchargement dans un thread différent pour pas bloquer le site et rediriger vers la page du serveur
@@ -37,9 +79,17 @@ def panel_server_install(request, id):
     #     )
     # thread.start()
     
-    # TODO: Remove
-    downloader.runDownload(
-        "https://api.papermc.io/v2/projects/paper/versions/1.20.4/builds/496/downloads/paper-1.20.4-496.jar", 
-        'paper-1.20.4-496.jar', 
-        'test')
-    return redirect('server-one', id)
+    server = Server.objects.get(id=id)
+    configuration = server.configuration
+
+    for command in configuration.commands.all().order_by('position'):
+        if command.command_type == CommandType.LINK.name:
+            downloader.runDownload(command.link, command.file_name, server.directory)
+        if command.command_type == CommandType.ACCEPT_EULA.name:
+            files.create_eula_file(server.directory)
+        if command.command_type == CommandType.COMMAND_LINE.name:
+            #TODO: Execute command line
+            pass
+    
+    response = HttpResponse(f'<script>alert("L\'installation a bien été éxécutée."); window.location.href="/panel/server/{id}";</script>')
+    return response

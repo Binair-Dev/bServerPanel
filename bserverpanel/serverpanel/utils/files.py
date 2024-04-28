@@ -13,3 +13,15 @@ def list_files_in_directory(directory_name):
         return files
     else:
         return None
+
+def write_file(file_name, destination_folder, content):
+    folder = os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, destination_folder)
+    file_path = os.path.join(folder, file_name)
+    with open(file_path, 'w') as f:
+        f.write(content)
+
+def create_eula_file(destination_folder):
+    folder = os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, destination_folder)
+    file_path = os.path.join(folder, "eula.txt")
+    with open(file_path, 'w') as f:
+        f.write("eula=true")
