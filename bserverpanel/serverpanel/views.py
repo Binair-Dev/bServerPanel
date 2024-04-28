@@ -7,7 +7,8 @@ from serverpanel.utils.command_type import CommandType
 from serverpanel.models import Server
 from .utils import downloader
 from .utils import files
-from .utils.SubServer import SubServer
+from .utils import unzipper
+from .utils.sub_server import SubServer
 
 running_servers = {}
 
@@ -83,13 +84,15 @@ def panel_server_install(request, id):
     configuration = server.configuration
 
     for command in configuration.commands.all().order_by('position'):
-        if command.command_type == CommandType.LINK.name:
+        print("Type: ", command.command_type)
+        if command.command_type == CommandType.LINK.value:
             downloader.runDownload(command.link, command.file_name, server.directory)
-        if command.command_type == CommandType.ACCEPT_EULA.name:
+        elif command.command_type == CommandType.ACCEPT_EULA.value:
             files.create_eula_file(server.directory)
-        if command.command_type == CommandType.COMMAND_LINE.name:
-            #TODO: Execute command line
+        elif command.command_type == CommandType.UNZIP.value:
+            unzipper.decompress_archive(f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}/{command.file_name}", f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}")
+        elif command.command_type == CommandType.COMMAND_LINE.value:
             pass
-    
+
     response = HttpResponse(f'<script>alert("L\'installation a bien été éxécutée."); window.location.href="/panel/server/{id}";</script>')
     return response

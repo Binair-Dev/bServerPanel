@@ -1,3 +1,6 @@
+TODO: Redo
+
+
 CONTIENT, 0N Rank, 11 User
 User: id, username, email, rank_id, is_superuser, balance, is_deleted
 GERE, 0N User, 1N Server
