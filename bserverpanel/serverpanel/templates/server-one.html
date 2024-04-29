@@ -6,7 +6,7 @@
     $(document).ready(function() {
         function updateContent() {
             $.ajax({
-                url: '/panel/server/{{server.id}}',
+                url: '/panel/server/logs/{{server.id}}',
                 success: function(data) {
                     var logsContent = $(data).find('#logs').html();
                     var logsTextarea = document.getElementById("logs");
@@ -22,7 +22,6 @@
 <div class="row" style="padding-left: 4%; padding-right: 2%; padding-bottom: 2%; margin-top: 50px;">
     <!-- Blog entries-->
     <div class="col-lg-8">
-        <!-- Featured blog post-->
         <div class="card mb-4">
             <div class="card-header">
                 Console
@@ -32,6 +31,16 @@
                     <textarea id="logs" class="form-control" rows="16" cols="33" readonly>
 {{logs}}
                     </textarea>
+                </div>
+                <div class="row" style="padding-top: 20px;">
+                    <div class="col">
+                        <div data-mdb-input-init class="form-outline w-100">
+                            <input type="text" class="form-control" placeholder="Envoyer une commande..">
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary">Envoyer</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -51,6 +60,20 @@
                 </div>
             </div>
         </div>
+        {% if token is not None %}
+        <div class="card mb-4">
+            <div class="card-header">Token</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <ul class="list-unstyled mb-0">
+                            <li>Token admin: {{token}}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         <div class="card mb-4">
             <div class="card-header">Commandes rapide</div>
             <div class="card-body">

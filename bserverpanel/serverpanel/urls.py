@@ -8,4 +8,5 @@ urlpatterns = [
     path('server/stop/<int:id>', views.panel_server_stop, name='server-stop'),
     path('server/restart/<int:id>', views.panel_server_restart, name='server-restart'),
     path('server/install/<int:id>', views.panel_server_install, name='server-install'),
+    path('server/logs/<int:id>', views.panel_server_logs, name='server-logs'),
 ]
