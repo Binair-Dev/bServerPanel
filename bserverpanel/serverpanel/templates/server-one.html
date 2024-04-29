@@ -1,6 +1,24 @@
 {% extends 'base.html' %}
 {% block title %}Serveur {{server.name}}{% endblock %}
 {% block content %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function updateContent() {
+            $.ajax({
+                url: '/panel/server/{{server.id}}',
+                success: function(data) {
+                    var logsContent = $(data).find('#logs').html();
+                    var logsTextarea = document.getElementById("logs");
+                    logsTextarea.value = logsContent;
+                    logsTextarea.scrollTop = logsTextarea.scrollHeight;
+                }
+            });
+        }
+        updateContent();
+        setInterval(updateContent, 1000);
+    });
+</script>
 <div class="row" style="padding-left: 4%; padding-right: 2%; padding-bottom: 2%; margin-top: 50px;">
     <!-- Blog entries-->
     <div class="col-lg-8">
@@ -11,17 +29,8 @@
             </div>
             <div class="card-body">
                 <div data-mdb-input-init class="form-outline w-100">
-                    <textarea class="form-control" rows="16" cols="33" readonly>
-Salut
-Comment vas tu ?
-Salut
-Comment vas tu ?
-Salut
-Comment vas tu ?
-Salut
-Comment vas tu ?
-Salut
-Comment vas tu ?
+                    <textarea id="logs" class="form-control" rows="16" cols="33" readonly>
+{{logs}}
                     </textarea>
                 </div>
             </div>

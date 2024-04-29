@@ -15,6 +15,8 @@ class Server(models.Model):
 
 class Game(models.Model):
     name = models.CharField(max_length=255)
+    stop_type = models.CharField(max_length=255, default="OS_COMMAND - PROGRAM_COMMAND")
+    stop_command = models.CharField(max_length=255, default="stop")
 
     def __str__(self):
         return f"{self.name}"
@@ -32,9 +34,9 @@ class Command(models.Model):
     name = models.CharField(max_length=255, default="")
     command_type = models.CharField(max_length=255, default="")
     position = models.IntegerField()
-    link = models.CharField(max_length=255, default="")
-    file_name = models.CharField(max_length=255, default="server.jar")
-    command_line = models.CharField(max_length=255, default="")
+    link = models.CharField(max_length=255, default="none")
+    file_name = models.CharField(max_length=255, default="none")
+    command_line = models.CharField(max_length=255, default="none")
 
     def __str__(self):
         return f"{self.name}"

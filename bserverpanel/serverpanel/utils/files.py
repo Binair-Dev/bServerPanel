@@ -25,3 +25,23 @@ def create_eula_file(destination_folder):
     file_path = os.path.join(folder, "eula.txt")
     with open(file_path, 'w') as f:
         f.write("eula=true")
+
+def find_logs_directory(root_directory):
+    for dirpath, _, _ in os.walk(root_directory):
+        logs_dir = os.path.join(dirpath, "logs")
+        if os.path.exists(logs_dir):
+            return logs_dir
+    return None
+
+def get_latest_log_file(root_directory):
+    logs_directory = find_logs_directory(root_directory)
+    if logs_directory:
+        log_files = [os.path.join(logs_directory, f) for f in os.listdir(logs_directory) if os.path.isfile(os.path.join(logs_directory, f))]
+
+        if not log_files:
+            return None
+
+        latest_log_file = max(log_files, key=os.path.getmtime)
+        return latest_log_file
+    else:
+        return None

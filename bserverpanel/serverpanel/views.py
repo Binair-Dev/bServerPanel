@@ -23,7 +23,10 @@ def panel_server_list(request):
 def panel_server_one(request, id):
     try:
         server = Server.objects.get(id=id)
-        return render(request, 'server-one.html', {'server': server})
+        logs_file = files.get_latest_log_file(os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory))
+        with open(logs_file, 'r') as fichier:
+            logs = fichier.read()
+            return render(request, 'server-one.html', {'server': server, 'logs': logs})
     except Server.DoesNotExist:
         return render(request, 'server-one.html', {})
     
@@ -33,7 +36,12 @@ def panel_server_start(request, id):
         return response
     else:
         server = Server.objects.get(id=id)
-        sub_server = SubServer(os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory), server.max_ram, server.start_command, server.stop_command)
+        sub_server = SubServer(
+            os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory), 
+            server.max_ram, 
+            server.start_command, 
+            server.stop_command,
+            server.game)
         done = sub_server.start_server()
         running_servers[f"{id}"] = sub_server
         if done:
@@ -46,7 +54,7 @@ def panel_server_stop(request, id):
     db_server = server = Server.objects.get(id=id)
     if f"{id}" in running_servers:
         server = running_servers[f"{id}"]
-        done = server.send_command(db_server.stop_command)
+        done = server.stop_server()
         if done:
             del running_servers[f"{id}"]
             response = HttpResponse(f'<script>alert("Le serveur a bien été arrêté."); window.location.href="/panel/server/{id}";</script>')
