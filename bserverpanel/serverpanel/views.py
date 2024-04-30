@@ -10,9 +10,12 @@ from .utils import files
 from .utils import unzipper
 from .utils import user_utils
 from .utils.sub_server import SubServer
+from django.contrib.auth.decorators import login_required
+
 
 running_servers = {}
 
+@login_required(login_url='/users/login')
 def panel_server_list(request):
     try:
         paneluser = PanelUser.objects.get(user=request.user)
@@ -20,7 +23,8 @@ def panel_server_list(request):
         return render(request, 'server-list.html', {'servers': servers, 'paneluser': paneluser})
     except PanelUser.DoesNotExist:
         return render(request, 'server-list.html', {})
-    
+
+@login_required(login_url='/users/login')
 def panel_server_one(request, id):
     if user_utils.do_user_have_access_to_server(request.user, id):
         try:
@@ -40,7 +44,8 @@ def panel_server_one(request, id):
             return render(request, 'server-one.html', {})
     else:
         return render(request, 'server-not-accessible.html')
-    
+
+@login_required(login_url='/users/login')   
 def panel_server_start(request, id):
     if user_utils.do_user_have_access_to_server(request.user, id):
         if f"{id}" in running_servers:
@@ -64,6 +69,7 @@ def panel_server_start(request, id):
     else:
         return render(request, 'server-not-accessible.html')
 
+@login_required(login_url='/users/login')
 def panel_server_stop(request, id):
     if user_utils.do_user_have_access_to_server(request.user, id):
         db_server = server = Server.objects.get(id=id)
@@ -81,6 +87,7 @@ def panel_server_stop(request, id):
     else:
         return render(request, 'server-not-accessible.html')
 
+@login_required(login_url='/users/login')
 def panel_server_restart(request, id):
     if user_utils.do_user_have_access_to_server(request.user, id):
         if f"{id}" in running_servers:
@@ -96,9 +103,11 @@ def panel_server_restart(request, id):
     else:
         return render(request, 'server-not-accessible.html')
 
+@login_required(login_url='/users/login')
 def panel_server_cmd(request, id):
     pass
 
+@login_required(login_url='/users/login')
 def panel_server_install(request, id):
     if user_utils.do_user_have_access_to_server(request.user, id):
         server = Server.objects.get(id=id)
@@ -119,6 +128,7 @@ def panel_server_install(request, id):
     else:
         return render(request, 'server-not-accessible.html')
 
+@login_required(login_url='/users/login')
 def panel_server_logs(request, id):
     if user_utils.do_user_have_access_to_server(request.user, id):
         try:
