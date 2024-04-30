@@ -1,4 +1,5 @@
 import os
+import shutil
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -158,3 +159,21 @@ def panel_server_logs(request, id):
 def panel_server_create(request, id):
     #TODO: implémenter les commandes
     pass
+
+@login_required(login_url='/users/login')
+def panel_server_delete(request, id):
+    if user_utils.do_user_have_access_to_server(request.user, id):
+        if f"{id}" in running_servers:
+            server = running_servers[f"{id}"]
+            paneluser = PanelUser.objects.get(user=request.user)
+            servers = Server.objects.all().filter(owner=paneluser)
+            return JsonResponse({'message': f"Veuillez arrêter le serveur avant de le supprimer."}, status=400)
+        server = Server.objects.get(id=id)
+        server_path = os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory)
+        shutil.rmtree(server_path)
+        server.delete()
+        paneluser = PanelUser.objects.get(user=request.user)
+        servers = Server.objects.all().filter(owner=paneluser)
+        return render(request, 'server-list.html', {'servers': servers, 'paneluser': paneluser})
+    else:
+        return render(request, 'server-not-accessible.html')
