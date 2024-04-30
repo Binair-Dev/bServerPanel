@@ -9,4 +9,5 @@ urlpatterns = [
     path('server/restart/<int:id>', views.panel_server_restart, name='server-restart'),
     path('server/install/<int:id>', views.panel_server_install, name='server-install'),
     path('server/logs/<int:id>', views.panel_server_logs, name='server-logs'),
+    path('server/create/<int:id>', views.panel_server_create, name='server-create'),
 ]

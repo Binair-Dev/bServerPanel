@@ -1,6 +1,6 @@
 import os
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from accounts.models import PanelUser
 from serverpanel.utils.command_type import CommandType
@@ -98,6 +98,7 @@ def panel_server_restart(request, id):
 
 @login_required(login_url='/users/login')
 def panel_server_cmd(request, id):
+    #TODO: implémenter les commandes
     pass
 
 @login_required(login_url='/users/login')
@@ -139,3 +140,8 @@ def panel_server_logs(request, id):
             return JsonResponse({'logs': 'Aucun fichier logs trouvé !'})
     else:
         return render(request, 'server-not-accessible.html')
+    
+@login_required(login_url='/users/login')
+def panel_server_create(request, id):
+    #TODO: implémenter les commandes
+    pass
