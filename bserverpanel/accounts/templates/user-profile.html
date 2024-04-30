@@ -1,28 +1,40 @@
 {% extends 'base.html' %}
 {% block title %}Profil utilisateur{% endblock %}
 {% block content %}
-  <h1>Votre profil</h1>
-  <ul>
-    <li>
-        <strong>Nom d'utilisateur:</strong> {{ user.username }}
-    </li>
-    <li>
-        <strong>Email:</strong> {{ user.email }}
-    </li>
-    <li>
-        <strong>Nombre de serveur disponible:</strong> {{ panel_user.server_count }}
-    </li>
-    <li>
-        <strong>Balance:</strong> {{ panel_user.balance }}€
-    </li>
-    <li>
-        <strong>Votre grade:</strong> {{ panel_user.rank.name }}
-    </li>
-    <li>
-        <strong>Dernière connexion:</strong> {{ user.last_login | date:"j/m/Y à H:i" }}
-    </li>
-    <li>
-        <strong>Première connexion:</strong> {{ user.date_joined | date:"j/m/Y à H:i" }}
-    </li>
-  </ul>
+  <div class="container" style="padding-top: 20px;">
+    <div class="row">
+      <div class="col-md-6 offset-md-3">
+        <div class="card">
+          <div class="card-header">
+            <h1 class="card-title">Votre profil</h1>
+          </div>
+          <div class="card-body">
+            <ul class="list-group">
+              <li class="list-group-item">
+                <strong>Nom d'utilisateur:</strong> {{ user.username }}
+              </li>
+              <li class="list-group-item">
+                <strong>Email:</strong> {{ user.email }}
+              </li>
+              <li class="list-group-item">
+                <strong>Nombre de serveur disponible:</strong> {{ panel_user.server_count }}
+              </li>
+              <li class="list-group-item">
+                <strong>Balance:</strong> {{ panel_user.balance }}€
+              </li>
+              <li class="list-group-item">
+                <strong>Votre grade:</strong> {{ panel_user.rank.name }}
+              </li>
+              <li class="list-group-item">
+                <strong>Dernière connexion:</strong> {{ user.last_login | date:"j/m/Y à H:i" }}
+              </li>
+              <li class="list-group-item">
+                <strong>Première connexion:</strong> {{ user.date_joined | date:"j/m/Y à H:i" }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
