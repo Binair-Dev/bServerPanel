@@ -1,6 +1,6 @@
 import os
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from accounts.models import PanelUser
 from serverpanel.utils.command_type import CommandType
@@ -49,8 +49,7 @@ def panel_server_one(request, id):
 def panel_server_start(request, id):
     if user_utils.do_user_have_access_to_server(request.user, id):
         if f"{id}" in running_servers:
-            response = HttpResponse(f'<script>alert("Le serveur est déjà démarré."); window.location.href="/panel/server/{id}";</script>')
-            return response
+            return JsonResponse({'message': 'Le serveur est déjà démarré.'})
         else:
             server = Server.objects.get(id=id)
             sub_server = SubServer(
@@ -62,28 +61,24 @@ def panel_server_start(request, id):
             done = sub_server.start_server()
             running_servers[f"{id}"] = sub_server
             if done:
-                response = HttpResponse(f'<script>alert("Le serveur a bien été démarré."); window.location.href="/panel/server/{id}";</script>')
+                return JsonResponse({'message': 'Le serveur a bien été démarré.'})
             else:
-                response = HttpResponse(f'<script>alert("Le serveur n\'a pas pu être demarré."); window.location.href="/panel/server/{id}";</script>')
-            return response
+                return JsonResponse({'message': 'Le serveur n\'a pas pu être demarré.'})
     else:
         return render(request, 'server-not-accessible.html')
 
 @login_required(login_url='/users/login')
 def panel_server_stop(request, id):
     if user_utils.do_user_have_access_to_server(request.user, id):
-        db_server = server = Server.objects.get(id=id)
         if f"{id}" in running_servers:
             server = running_servers[f"{id}"]
             done = server.stop_server()
             if done:
                 del running_servers[f"{id}"]
-                response = HttpResponse(f'<script>alert("Le serveur a bien été arrêté."); window.location.href="/panel/server/{id}";</script>')
+                return JsonResponse({'message': 'Le serveur a bien été arrêté.'})
             else:
-                response = HttpResponse(f'<script>alert("Le serveur n\'a pas pu être arrêté."); window.location.href="/panel/server/{id}";</script>')
-            return response
-        response = HttpResponse(f'<script>alert("Le serveur n\'est pas demarré."); window.location.href="/panel/server/{id}";</script>')
-        return response
+                return JsonResponse({'message': 'Le serveur n\'a pas pu être arrêté.'})
+        return JsonResponse({'message': 'Le serveur n\'est pas demarré.'})
     else:
         return render(request, 'server-not-accessible.html')
 
@@ -94,12 +89,10 @@ def panel_server_restart(request, id):
             server = running_servers[f"{id}"]
             done = server.restart_server()
             if done:
-                response = HttpResponse(f'<script>alert("Le serveur a bien été redémarré."); window.location.href="/panel/server/{id}";</script>')
+                return JsonResponse({'message': 'Le serveur a bien été redémarré.'})
             else:
-                response = HttpResponse(f'<script>alert("Le serveur n\'a pas pu être redémarré."); window.location.href="/panel/server/{id}";</script>')
-            return response
-        response = HttpResponse(f'<script>alert("Le serveur n\'est pas demarré."); window.location.href="/panel/server/{id}";</script>')
-        return response
+                return JsonResponse({'message': 'Le serveur n\'a pas pu être redémarré.'})
+        return JsonResponse({'message': 'Le serveur n''est pas demarré.'})
     else:
         return render(request, 'server-not-accessible.html')
 
@@ -123,8 +116,7 @@ def panel_server_install(request, id):
             elif command.command_type == CommandType.COMMAND_LINE.value:
                 pass
 
-        response = HttpResponse(f'<script>alert("L\'installation a bien été éxécutée."); window.location.href="/panel/server/{id}";</script>')
-        return response
+        return JsonResponse({'message': 'Le serveur a bien été installé.'})
     else:
         return render(request, 'server-not-accessible.html')
 
@@ -136,14 +128,14 @@ def panel_server_logs(request, id):
             try:
                 logs_file = files.get_latest_log_file(os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory))
                 if logs_file is None:
-                    return HttpResponse("Aucun fichier logs trouvé !")
+                    return JsonResponse({'logs': 'Aucun fichier logs trouvé !'})
                 else:
                     with open(logs_file, 'r') as fichier:
                         logs = fichier.read()
-                        return HttpResponse(logs)
+                        return JsonResponse({'logs': logs})
             except FileNotFoundError:
-                return HttpResponse("Aucun fichier logs trouvé !")
+                return JsonResponse({'logs': 'Aucun fichier logs trouvé !'})
         except Server.DoesNotExist:
-            return HttpResponse("Aucun fichier logs trouvé !")
+            return JsonResponse({'logs': 'Aucun fichier logs trouvé !'})
     else:
         return render(request, 'server-not-accessible.html')
