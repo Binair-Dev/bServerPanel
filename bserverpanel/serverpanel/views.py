@@ -97,9 +97,22 @@ def panel_server_restart(request, id):
         return render(request, 'server-not-accessible.html')
 
 @login_required(login_url='/users/login')
-def panel_server_cmd(request, id):
-    #TODO: implémenter les commandes
-    pass
+def panel_server_cmd(request, id, cmd):
+    if user_utils.do_user_have_access_to_server(request.user, id):
+        if f"{id}" in running_servers:
+            server = running_servers[f"{id}"]
+            if server.game.name == "Minecraft":
+                done = server.send_command(cmd)
+                if done:
+                    return JsonResponse({'message': 'La commande a bien été envoyée.'})
+                else:
+                    return JsonResponse({'message': 'Impossible d''envoyer la commande.'})
+            else:
+                    return JsonResponse({'message': 'Impossible d''envoyer une commande dans ce type de serveur.'})
+        else:
+            return JsonResponse({'message': 'Impossible d''envoyer la commande.'})
+    else:
+        return render(request, 'server-not-accessible.html')
 
 @login_required(login_url='/users/login')
 def panel_server_install(request, id):

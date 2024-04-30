@@ -52,16 +52,17 @@
 {{logs}}
                     </textarea>
                 </div>
-                <div class="row" style="padding-top: 20px;">
+                <form id="commandForm" class="row" style="padding-top: 20px;" method="post">
                     <div class="col">
                         <div data-mdb-input-init class="form-outline w-100">
-                            <input type="text" class="form-control" placeholder="Envoyer une commande..">
+                            {% csrf_token %}
+                            <input id="commandInput" type="text" name="command" class="form-control" placeholder="Envoyer une commande..">
                         </div>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-primary">Envoyer</button>
+                        <button type="submit" class="btn btn-primary">Envoyer</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -187,5 +188,27 @@
                 }
             });
         }
+
+        document.getElementById('commandForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var commandValue = document.getElementById('commandInput').value;
+            $.ajax({
+                url: "/panel/server/command/{{server.id}}/" + encodeURIComponent(commandValue) + "/",
+                success: function(data) {
+                    console.log(data)
+                    var popup = document.getElementById("popup");
+                    popup.textContent = data.message;
+                    popup.className = "alert text-center alert-success";
+                    var inputText = document.getElementById("commandInput");
+                    inputText.value = "";
+
+                    $('#popup').fadeIn();
+
+                    setTimeout(function(){
+                        $('#popup').fadeOut();
+                    }, 5000);
+                }
+            });
+        });
 </script>
 {% endblock %}
