@@ -7,8 +7,8 @@ class Server(models.Model):
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
     configuration = models.ForeignKey('Configuration', on_delete=models.CASCADE, default=None, null=True)
     max_ram = models.IntegerField(default=2)
-    start_command = models.CharField(max_length=255)
-    stop_command = models.CharField(max_length=255)
+    start_command = models.ForeignKey('Command', on_delete=models.SET_NULL, related_name="start_command", default=None, null=True)
+    stop_command = models.ForeignKey('Command', on_delete=models.SET_NULL, related_name="stop_command", default=None, null=True)
 
     def __str__(self):
         return f"{self.id} | {self.game.name}"

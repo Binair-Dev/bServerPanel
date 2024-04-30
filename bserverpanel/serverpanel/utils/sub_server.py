@@ -18,7 +18,7 @@ class SubServer:
     def start_server(self):
         if not self.process:
             try:
-                command_list = self.start_command.replace("%RAM%", str(self.max_ram)).split()
+                command_list = self.start_command.command_line.replace("%RAM%", str(self.max_ram)).split()
                 self.process = subprocess.Popen(command_list, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 return True
             except Exception as e:
@@ -28,20 +28,13 @@ class SubServer:
 
     def stop_server(self):
         if self.game.stop_type in CommandType.PROGRAM_COMMAND.value:
-            print(self.game.stop_command)
-            self.send_command(self.stop_command)
+            self.send_command(self.stop_command.command_line)
             return True
         if self.game.stop_type in CommandType.KILL.value:
             self.process.terminate()
             self.process.wait()
             return True
         return False
-    
-    def restart_server(self):
-        self.send_command(self.stop_command)
-        time.sleep(5)
-        self.start_server()
-        return True
     
     def send_command(self, command):
         if self.process:

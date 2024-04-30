@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Créer un serveur{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card mt-5">
+        <div class="card-header">
+          <h3 class="text-center">Créer un serveur</h3>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="name">Nom du serveur :</label>
+              <input type="text" class="form-control" id="name" name="name"
+                placeholder="Entrez le nom de votre serveur">
+            </div>
+            <div class="form-group">
+              <label for="game">Type de serveur:</label>
+              <select name="game" required="" id="game" class="form-control">
+                <option value="" selected disabled>---------</option>
+                {% for game in games %}
+                <option value="{{game.id}}">{{ game.name }}</option>
+                {% endfor %}
+              </select>              
+            </div>
+            <div class="form-group">
+              <label for="configuration">Configuration:</label>
+              <select name="configuration" required="" id="configuration" class="form-control">
+                <option value="" selected disabled>---------</option>
+                {% for config in configurations %}
+                <option value="{{config.id}}">{{ config.name }}</option>
+                {% endfor %}
+              </select>              
+            </div>
+            <div class="form-group">
+              <label for="max_ram">Ram allouée (en GB) :</label>
+              <input type="number" class="form-control" id="max_ram" name="max_ram"
+                placeholder="2">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block mt-3">Créer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

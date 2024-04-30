@@ -1,11 +1,13 @@
 import os
 import shutil
+import uuid
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from accounts.models import PanelUser
+from serverpanel.forms import CreateServerForm
 from serverpanel.utils.command_type import CommandType
-from serverpanel.models import Server
+from serverpanel.models import Server, Game, Configuration, Command
 from .utils import downloader
 from .utils import files
 from .utils import unzipper
@@ -60,8 +62,8 @@ def panel_server_start(request, id):
                 server.stop_command,
                 server.game)
             done = sub_server.start_server()
-            running_servers[f"{id}"] = sub_server
             if done:
+                running_servers[f"{id}"] = sub_server
                 return JsonResponse({'message': 'Le serveur a bien été démarré.'})
             else:
                 return JsonResponse({'message': 'Le serveur n\'a pas pu être demarré.'})
@@ -80,20 +82,6 @@ def panel_server_stop(request, id):
             else:
                 return JsonResponse({'message': 'Le serveur n\'a pas pu être arrêté.'})
         return JsonResponse({'message': 'Le serveur n\'est pas demarré.'})
-    else:
-        return render(request, 'server-not-accessible.html')
-
-@login_required(login_url='/users/login')
-def panel_server_restart(request, id):
-    if user_utils.do_user_have_access_to_server(request.user, id):
-        if f"{id}" in running_servers:
-            server = running_servers[f"{id}"]
-            done = server.restart_server()
-            if done:
-                return JsonResponse({'message': 'Le serveur a bien été redémarré.'})
-            else:
-                return JsonResponse({'message': 'Le serveur n\'a pas pu être redémarré.'})
-        return JsonResponse({'message': 'Le serveur n''est pas demarré.'})
     else:
         return render(request, 'server-not-accessible.html')
 
@@ -146,19 +134,17 @@ def panel_server_logs(request, id):
                     return JsonResponse({'logs': 'Aucun fichier logs trouvé !'})
                 else:
                     with open(logs_file, 'r') as fichier:
-                        logs = fichier.read()
-                        return JsonResponse({'logs': logs})
+                        try:
+                            logs = fichier.read()
+                            return JsonResponse({'logs': logs})
+                        except UnicodeDecodeError:
+                            return JsonResponse({'logs': 'Aucun fichier logs trouvé !'})
             except FileNotFoundError:
                 return JsonResponse({'logs': 'Aucun fichier logs trouvé !'})
         except Server.DoesNotExist:
             return JsonResponse({'logs': 'Aucun fichier logs trouvé !'})
     else:
         return render(request, 'server-not-accessible.html')
-    
-@login_required(login_url='/users/login')
-def panel_server_create(request, id):
-    #TODO: implémenter les commandes
-    pass
 
 @login_required(login_url='/users/login')
 def panel_server_delete(request, id):
@@ -167,7 +153,7 @@ def panel_server_delete(request, id):
             server = running_servers[f"{id}"]
             paneluser = PanelUser.objects.get(user=request.user)
             servers = Server.objects.all().filter(owner=paneluser)
-            return JsonResponse({'message': f"Veuillez arrêter le serveur avant de le supprimer."}, status=400)
+            return JsonResponse({'message': "Veuillez arrêter le serveur avant de le supprimer."}, status=400)
         server = Server.objects.get(id=id)
         server_path = os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory)
         shutil.rmtree(server_path)
@@ -177,3 +163,51 @@ def panel_server_delete(request, id):
         return render(request, 'server-list.html', {'servers': servers, 'paneluser': paneluser})
     else:
         return render(request, 'server-not-accessible.html')
+    
+    
+@login_required(login_url='/users/login')
+def panel_server_create(request):
+    if request.method == 'POST':
+        form = CreateServerForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            game = form.cleaned_data['game']
+            configuration = form.cleaned_data['configuration']
+            ram = form.cleaned_data['max_ram']
+
+            game = Game.objects.get(name=game)
+            configuration = Configuration.objects.get(name=configuration)
+            start_command = None
+            stop_command = None
+            
+            commands = Command.objects.all()
+            for command in commands:
+                if "Start" in command.name and game.name in command.name:
+                    start_command = command
+                if "Stop" in command.name and game.name in command.name:
+                    stop_command = command
+
+            server = Server()
+            server.name = name
+            server.game = game
+            server.start_command = start_command
+            server.stop_command = stop_command
+            server.configuration = configuration
+            server.max_ram = ram
+            server.directory = request.user.username + "/" + uuid.uuid4().hex
+            server.save()
+            
+            paneluser = PanelUser.objects.get(user=request.user)
+            servers = Server.objects.all().filter(owner=paneluser)
+            selected_users = PanelUser.objects.filter(user=request.user)
+            server.owner.add(*selected_users)
+            
+            return render(request, 'server-list.html', {'servers': servers, 'paneluser': paneluser})
+    else:
+        form = CreateServerForm()
+        games = Game.objects.all()
+        configurations = Configuration.objects.all()
+    return render(request, 'server-create.html', {
+        'form': form,
+        'games': games,
+        'configurations': configurations})
