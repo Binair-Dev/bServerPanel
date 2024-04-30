@@ -23,10 +23,10 @@
                 <ul class="navbar-nav ml-auto">
                     {% if not user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/users/login">Login</a>
+                        <a class="nav-link active" aria-current="page" href="/users/login">Se connecter</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/users/register">Register</a>
+                        <a class="nav-link" href="/users/register">S'enregistrer</a>
                     </li>
                     {% endif %}
                     {% if user.is_authenticated %}
@@ -37,7 +37,7 @@
                         <a class="nav-link" href="/users/profile">Profil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/users/logout">Logout</a>
+                        <a class="nav-link" href="/users/logout">Déconnexion</a>
                     </li>
                     {% endif %}
                 </ul>
