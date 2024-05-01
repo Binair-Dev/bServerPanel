@@ -1,4 +1,5 @@
 import os
+import random
 import shutil
 import uuid
 from django.conf import settings
@@ -7,7 +8,7 @@ from django.shortcuts import render
 from accounts.models import PanelUser
 from serverpanel.forms import CreateServerForm
 from serverpanel.utils.command_type import CommandType
-from serverpanel.models import Server, Game, Configuration, Command
+from serverpanel.models import Server, Game, Configuration, Command, Parameters
 from .utils import downloader
 from .utils import files
 from .utils import unzipper
@@ -60,7 +61,8 @@ def panel_server_start(request, id):
                 server.max_ram, 
                 server.start_command, 
                 server.stop_command,
-                server.game)
+                server.game,
+                server.parameters.all())
             done = sub_server.start_server()
             if done:
                 running_servers[f"{id}"] = sub_server
@@ -157,6 +159,9 @@ def panel_server_delete(request, id):
         server = Server.objects.get(id=id)
         server_path = os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory)
         shutil.rmtree(server_path)
+        parameters = server.parameters.all()
+        for parameter in parameters:
+            parameter.delete()
         server.delete()
         paneluser = PanelUser.objects.get(user=request.user)
         servers = Server.objects.all().filter(owner=paneluser)
@@ -197,11 +202,51 @@ def panel_server_create(request):
             server.directory = request.user.username + "/" + uuid.uuid4().hex
             server.save()
             
+            # Add selected users to the server
             paneluser = PanelUser.objects.get(user=request.user)
             servers = Server.objects.all().filter(owner=paneluser)
             selected_users = PanelUser.objects.filter(user=request.user)
             server.owner.add(*selected_users)
-            
+
+            #Add selected parameters to the server
+            if game.name in "Minecraft":
+                parameter = Parameters()
+                parameter.name = "--port "
+                parameter.port = random.randint(1025, 65535)
+                parameter.server = server
+                parameter.save()
+                server.parameters.add(parameter)
+            if game.name in "Teamspeak":
+                parameter = Parameters()
+                parameter.name = "default_voice_port="
+                parameter.port = random.randint(1025, 65535)
+                parameter.server = server
+                parameter.save()
+                server.parameters.add(parameter)
+                parameter = Parameters()
+                parameter.name = "filetransfer_port="
+                parameter.port = random.randint(1025, 65535)
+                parameter.server = server
+                parameter.save()
+                server.parameters.add(parameter)
+                parameter = Parameters()
+                parameter.name = "query_port="
+                parameter.port = random.randint(1025, 65535)
+                parameter.server = server
+                parameter.save()
+                server.parameters.add(parameter)
+                parameter = Parameters()
+                parameter.name = "query_ssh_port="
+                parameter.port = random.randint(1025, 65535)
+                parameter.server = server
+                parameter.save()
+                server.parameters.add(parameter)
+                parameter = Parameters()
+                parameter.name = "query_http_port="
+                parameter.port = random.randint(1025, 65535)
+                parameter.server = server
+                parameter.save()
+                server.parameters.add(parameter)
             return render(request, 'server-list.html', {'servers': servers, 'paneluser': paneluser})
     else:
         form = CreateServerForm()

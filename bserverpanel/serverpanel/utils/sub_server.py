@@ -5,21 +5,26 @@ import atexit
 from serverpanel.utils.command_type import CommandType
 
 class SubServer:
-    def __init__(self, server_path, max_ram, start_command, stop_command, game):
+    def __init__(self, server_path, max_ram, start_command, stop_command, game, parameters):
         self.server_path = server_path
         self.process = None
         self.max_ram = max_ram
         self.start_command = start_command
         self.stop_command = stop_command
         self.game = game
+        self.parameters = parameters
 
         atexit.register(self.close_server)
     
     def start_server(self):
+        command_list = self.start_command.command_line.replace("%RAM%", str(self.max_ram))
+        parameters = ""
+        for p in self.parameters:
+            parameters += (str(p.name) + str(p.port) + " ")
+        command_list = command_list.replace("%PARAMETERS%", parameters)
         if not self.process:
             try:
-                command_list = self.start_command.command_line.replace("%RAM%", str(self.max_ram)).split()
-                self.process = subprocess.Popen(command_list, cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self.process = subprocess.Popen(command_list.split(), cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 return True
             except Exception as e:
                 return False
@@ -29,6 +34,8 @@ class SubServer:
     def stop_server(self):
         if self.game.stop_type in CommandType.PROGRAM_COMMAND.value:
             self.send_command(self.stop_command.command_line)
+            self.process.wait(timeout=5)
+            self.process.terminate()
             return True
         if self.game.stop_type in CommandType.KILL.value:
             self.process.terminate()

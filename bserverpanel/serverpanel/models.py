@@ -9,6 +9,7 @@ class Server(models.Model):
     max_ram = models.IntegerField(default=2)
     start_command = models.ForeignKey('Command', on_delete=models.SET_NULL, related_name="start_command", default=None, null=True)
     stop_command = models.ForeignKey('Command', on_delete=models.SET_NULL, related_name="stop_command", default=None, null=True)
+    parameters = models.ManyToManyField('Parameters')
 
     def __str__(self):
         return f"{self.id} | {self.game.name}"
@@ -44,6 +45,13 @@ class Command(models.Model):
 class Configuration(models.Model):
     name = models.CharField(max_length=255)
     commands = models.ManyToManyField(Command)
+
+    def __str__(self):
+        return f"{self.name}"
+    
+class Parameters(models.Model):
+    name = models.CharField(max_length=255, default="default-port")
+    port = models.IntegerField(unique=True)
 
     def __str__(self):
         return f"{self.name}"
