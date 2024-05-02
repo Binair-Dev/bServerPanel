@@ -1,6 +1,6 @@
 apt update && apt upgrade -y
 
-apt install nano bzip2 ufw software-properties-common dirmngr apt-transport-https gnupg2 ca-certificates lsb-release debian-archive-keyring wget vsftpd -y
+apt install nano wine sqlite3 bzip2 xinit ufw software-properties-common dirmngr apt-transport-https gnupg2 ca-certificates lsb-release debian-archive-keyring wget vsftpd -y
 
 #Configuration VSFTP
 echo "write_enable=YES" >> $vsftpd_conf

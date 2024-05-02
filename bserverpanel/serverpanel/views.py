@@ -120,6 +120,18 @@ def panel_server_install(request, id):
                 unzipper.decompress_archive(f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}/{command.file_name}", f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}")
             elif command.command_type == CommandType.COMMAND_LINE.value:
                 pass
+        
+        if f"{id}" not in running_servers:
+            sub_server = SubServer(
+                os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory), 
+                server.max_ram, 
+                server.start_command, 
+                server.stop_command,
+                server.game,
+                server.parameters.all())
+            sub_server.install_server()
+
+
 
         return JsonResponse({'message': 'Le serveur a bien été installé.'})
     else:

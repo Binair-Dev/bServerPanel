@@ -53,7 +53,7 @@ def create_default(sender, **kwargs):
         stop_minecraft_command = Command.objects.create(
             name="Stop Minecraft", 
             command_type="PROGRAM_COMMAND",
-            position=0,
+            position=1,
             link="none",
             file_name="none",
             command_line="stop")
@@ -67,7 +67,7 @@ def create_default(sender, **kwargs):
         stop_teamspeak_command = Command.objects.create(
             name="Stop Teamspeak", 
             command_type="KILL",
-            position=0,
+            position=1,
             link="none",
             file_name="none",
             command_line="none")

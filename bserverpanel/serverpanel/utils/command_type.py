@@ -8,3 +8,4 @@ class CommandType(Enum):
     OS_COMMAND = "OS_COMMAND"
     PROGRAM_COMMAND = "PROGRAM_COMMAND"
     KILL = "KILL"
+    SHELL_SCRIPT = "SHELL_SCRIPT"
