@@ -19,4 +19,3 @@ echo "..."
 $sqlite_command "$sql_query"
 echo "Sortie de l'interface SQLite."
 echo ".exit" | $sqlite_command
-

@@ -74,22 +74,3 @@ class SubServer:
             except subprocess.TimeoutExpired:
                 self.process.terminate()
                 self.process.wait()
-
-    def install_server(self):
-        command_list = self.start_command.command_line.replace("%RAM%", str(self.max_ram))
-        parameters = ""
-        for p in self.parameters:
-            parameters += (str(p.name) + str(p.port) + " ")
-        command_list = command_list.replace("%PARAMETERS%", parameters)
-        if not self.process:
-            try:
-                self.process = subprocess.Popen(command_list.split(), cwd=self.server_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                if self.game.name in "Teamspeak":
-                    time.sleep(2)
-                    self.stop_server()
-                    #TODO: Forward File Transfert Port THEN start again
-                return True
-            except Exception as e:
-                return False
-        else:
-            return False

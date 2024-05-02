@@ -138,3 +138,4 @@ SIMPLE_JWT = {
 }
 
 DEFAULT_INSTALLATION_DIRECTORY = os.path.join(BASE_DIR, 'servers')
+DEFAULT_SCRIPT_DIRECTORY = os.path.join(BASE_DIR, 'scripts')

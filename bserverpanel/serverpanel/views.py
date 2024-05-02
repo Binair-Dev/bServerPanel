@@ -1,6 +1,8 @@
 import os
 import random
 import shutil
+import subprocess
+import time
 import uuid
 from django.conf import settings
 from django.http import JsonResponse
@@ -56,8 +58,11 @@ def panel_server_start(request, id):
             return JsonResponse({'message': 'Le serveur est déjà démarré.'})
         else:
             server = Server.objects.get(id=id)
+            directory = os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory)
+            if server.sub_directory:
+                directory = os.path.join(directory, server.sub_directory)
             sub_server = SubServer(
-                os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory), 
+                directory, 
                 server.max_ram, 
                 server.start_command, 
                 server.stop_command,
@@ -120,19 +125,6 @@ def panel_server_install(request, id):
                 unzipper.decompress_archive(f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}/{command.file_name}", f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}")
             elif command.command_type == CommandType.COMMAND_LINE.value:
                 pass
-        
-        if f"{id}" not in running_servers:
-            sub_server = SubServer(
-                os.path.join(settings.DEFAULT_INSTALLATION_DIRECTORY, server.directory), 
-                server.max_ram, 
-                server.start_command, 
-                server.stop_command,
-                server.game,
-                server.parameters.all())
-            sub_server.install_server()
-
-
-
         return JsonResponse({'message': 'Le serveur a bien été installé.'})
     else:
         return render(request, 'server-not-accessible.html')
@@ -224,41 +216,88 @@ def panel_server_create(request):
             if game.name in "Minecraft":
                 parameter = Parameters()
                 parameter.name = "--port "
-                parameter.port = random.randint(1025, 65535)
+                parameter.port = random.randint(25565, 65535)
                 parameter.server = server
                 parameter.save()
                 server.parameters.add(parameter)
             if game.name in "Teamspeak":
                 parameter = Parameters()
                 parameter.name = "default_voice_port="
-                parameter.port = random.randint(1025, 65535)
-                parameter.server = server
-                parameter.save()
-                server.parameters.add(parameter)
-                parameter = Parameters()
-                parameter.name = "filetransfer_port="
-                parameter.port = random.randint(1025, 65535)
+                parameter.port = random.randint(25565, 65535)
                 parameter.server = server
                 parameter.save()
                 server.parameters.add(parameter)
                 parameter = Parameters()
                 parameter.name = "query_port="
-                parameter.port = random.randint(1025, 65535)
+                parameter.port = random.randint(25565, 65535)
                 parameter.server = server
                 parameter.save()
                 server.parameters.add(parameter)
                 parameter = Parameters()
                 parameter.name = "query_ssh_port="
-                parameter.port = random.randint(1025, 65535)
+                parameter.port = random.randint(25565, 65535)
                 parameter.server = server
                 parameter.save()
                 server.parameters.add(parameter)
                 parameter = Parameters()
                 parameter.name = "query_http_port="
-                parameter.port = random.randint(1025, 65535)
+                parameter.port = random.randint(25565, 65535)
                 parameter.server = server
                 parameter.save()
                 server.parameters.add(parameter)
+                server.sub_directory = "teamspeak3-server_linux_amd64"
+                server.save()
+
+                #Automatic installation
+                configuration = server.configuration
+                process = None
+                for command in configuration.commands.all().order_by('position'):
+                    print(command)
+                    if command.command_type == CommandType.LINK.value:
+                        downloader.runDownload(command.link, command.file_name, server.directory)
+                    elif command.command_type == CommandType.ACCEPT_EULA.value:
+                        files.create_eula_file(server.directory)
+                    elif command.command_type == CommandType.UNZIP.value:
+                        unzipper.decompress_archive(f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}/{command.file_name}", f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}")
+                    elif command.command_type == CommandType.OS_COMMAND.value:
+                        directory = f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}/"
+                        if server.sub_directory is not None:
+                            directory = f"{settings.DEFAULT_INSTALLATION_DIRECTORY}/{server.directory}/{server.sub_directory}/"
+                        if "%PARAMETERS%" in command.command_line:
+                            parameters = ""
+                            for p in server.parameters.all():
+                                parameters += (str(p.name) + str(p.port) + " ")
+                            process = subprocess.Popen((command.command_line.replace("%PARAMETERS%", parameters).replace("%RAM%", str(server.max_ram))).strip(), cwd=directory, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                        else:
+                            process = subprocess.Popen((command.command_line.replace("%RAM%", str(server.max_ram))).strip(), cwd=directory, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                    elif command.command_type == CommandType.SHELL_SCRIPT.value:
+                        commande = "sh " + settings.DEFAULT_SCRIPT_DIRECTORY + "/" + command.file_name
+                        if "%DIR%" in command.file_name:
+                            if server.sub_directory:
+                                commande = commande.replace("%DIR%", settings.DEFAULT_INSTALLATION_DIRECTORY + "/" + server.directory + "/" + server.sub_directory + "/")
+                            else:
+                                commande = commande.replace("%DIR%", settings.DEFAULT_INSTALLATION_DIRECTORY + "/" + server.directory + "/")
+                        if "%PORT%" in command.file_name:
+                            parameter = Parameters()
+                            parameter.name = "port"
+                            parameter.port = random.randint(25565, 65535)
+                            parameter.server = server
+                            parameter.save()
+                            server.parameters.add(parameter)
+                            commande = commande.replace("%PORT%", str(parameter.port))
+                        if process:
+                            subprocess.Popen("kill " + str(process.pid + 1), shell=True)
+                        subprocess.run(commande, cwd=directory, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                    elif command.command_type == CommandType.WAIT.value:
+                        time.sleep(command.delay)
+                    elif command.command_type == CommandType.KILL.value:
+                        if process:
+                            try:
+                                process.terminate()
+                                process.wait()
+                            except Exception as ignored:
+                                pass
+
             return render(request, 'server-list.html', {'servers': servers, 'paneluser': paneluser})
     else:
         form = CreateServerForm()

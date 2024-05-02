@@ -3,6 +3,7 @@ from django.db import models
 class Server(models.Model):
     name = models.CharField(max_length=255, default="server")
     directory = models.CharField(max_length=255, default=None, null=True)
+    sub_directory = models.CharField(max_length=255, default=None, null=True)
     owner = models.ManyToManyField('accounts.PanelUser')
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
     configuration = models.ForeignKey('Configuration', on_delete=models.CASCADE, default=None, null=True)
@@ -38,6 +39,7 @@ class Command(models.Model):
     link = models.CharField(max_length=255, default="none")
     file_name = models.CharField(max_length=255, default="none")
     command_line = models.CharField(max_length=255, default="none")
+    delay = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.name}"
