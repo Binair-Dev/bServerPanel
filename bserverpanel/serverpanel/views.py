@@ -285,6 +285,7 @@ def panel_server_create(request):
                             server.parameters.add(parameter)
                             commande = commande.replace("%PORT%", str(parameter.port))
                         if process:
+                            subprocess.Popen("kill " + str(process.pid), shell=True)
                             subprocess.Popen("kill " + str(process.pid + 1), shell=True)
                         subprocess.run(commande, cwd=directory, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                     elif command.command_type == CommandType.WAIT.value:
