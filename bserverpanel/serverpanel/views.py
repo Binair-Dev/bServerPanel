@@ -252,7 +252,6 @@ def panel_server_create(request):
                 configuration = server.configuration
                 process = None
                 for command in configuration.commands.all().order_by('position'):
-                    print(command)
                     if command.command_type == CommandType.LINK.value:
                         downloader.runDownload(command.link, command.file_name, server.directory)
                     elif command.command_type == CommandType.ACCEPT_EULA.value:
